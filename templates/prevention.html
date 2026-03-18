@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Diabetes Prevention</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<nav>
+
+<h2>Diabetes AI</h2>
+
+<ul>
+<li><a href="/">Home</a></li>
+<li><a href="/prediction">Prediction</a></li>
+<li><a href="/diet">Diet</a></li>
+<li><a href="/prevention">Prevention</a></li>
+</ul>
+
+</nav>
+
+<div class="about-container">
+
+<h1>Diabetes Prevention Guide</h1>
+
+<div class="prevention-buttons">
+
+<button onclick="show('basic')">Basic Habits</button>
+
+<button onclick="show('lifestyle')">Healthy Lifestyle</button>
+
+<button onclick="show('monitor')">Health Monitoring</button>
+
+<button onclick="show('medical')">Medical Care</button>
+
+</div>
+
+
+<div id="basic" class="prevention-content">
+
+<ul>
+<li>Maintain balanced diet</li>
+<li>Drink enough water</li>
+<li>Avoid sugary drinks</li>
+<li>Limit processed foods</li>
+<li>Sleep 7–8 hours daily</li>
+</ul>
+
+</div>
+
+
+<div id="lifestyle" class="prevention-content">
+
+<ul>
+<li>Exercise 30 minutes daily</li>
+<li>Maintain healthy weight</li>
+<li>Reduce sedentary lifestyle</li>
+<li>Manage stress</li>
+</ul>
+
+</div>
+
+
+<div id="monitor" class="prevention-content">
+
+<ul>
+<li>Check blood glucose regularly</li>
+<li>Monitor blood pressure</li>
+<li>Track BMI</li>
+</ul>
+
+</div>
+
+
+<div id="medical" class="prevention-content">
+
+<ul>
+<li>Regular health checkups</li>
+<li>Follow doctor's advice</li>
+<li>Consult doctor if symptoms appear</li>
+</ul>
+
+</div>
+
+</div>
+
+
+<script>
+
+function show(id){
+
+let sections=document.querySelectorAll(".prevention-content");
+
+sections.forEach(s=>s.style.display="none");
+
+document.getElementById(id).style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>

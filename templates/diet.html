@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Diet Plan</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<nav>
+    <h2>Diabetes AI</h2>
+    <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/predict">Prediction</a></li>
+        <li><a href="/diet">Diet</a></li>
+        <li><a href="/prevention">Prevention</a></li>
+    </ul>
+</nav>
+
+<div class="about-container">
+
+<h1>Diabetes Diet Planner</h1>
+
+<p>
+Select the risk level to view a recommended weekly diet plan designed to help manage blood sugar levels.
+</p>
+
+<br>
+
+<div style="text-align:center;">
+<button onclick="showDiet('low')">Low Risk Diet</button>
+<button onclick="showDiet('medium')">Medium Risk Diet</button>
+<button onclick="showDiet('high')">High Risk Diet</button>
+</div>
+
+<br><br>
+
+<!-- LOW RISK DIET -->
+
+<div id="low" style="display:none;">
+
+<h2>Low Risk – Weekly Diet Plan</h2>
+
+<ul>
+<li><b>Monday:</b> Oats + fruit breakfast, brown rice + vegetables lunch, grilled chicken dinner</li>
+<li><b>Tuesday:</b> Whole wheat toast + egg, dal + chapati lunch, vegetable soup dinner</li>
+<li><b>Wednesday:</b> Smoothie + nuts breakfast, quinoa salad lunch, grilled fish dinner</li>
+<li><b>Thursday:</b> Upma breakfast, brown rice + dal lunch, vegetable curry dinner</li>
+<li><b>Friday:</b> Idli + sambar breakfast, vegetable khichdi lunch, salad + soup dinner</li>
+<li><b>Saturday:</b> Poha breakfast, chapati + paneer lunch, grilled vegetables dinner</li>
+<li><b>Sunday:</b> Omelette + toast breakfast, rice + fish curry lunch, light salad dinner</li>
+</ul>
+
+</div>
+
+<!-- MEDIUM RISK DIET -->
+
+<div id="medium" style="display:none;">
+
+<h2>Medium Risk – Weekly Diet Plan</h2>
+
+<ul>
+<li><b>Monday:</b> Oatmeal breakfast, quinoa + vegetables lunch, grilled chicken dinner</li>
+<li><b>Tuesday:</b> Boiled eggs + fruit breakfast, brown rice + dal lunch, vegetable soup dinner</li>
+<li><b>Wednesday:</b> Smoothie + almonds breakfast, chapati + vegetable curry lunch, salad dinner</li>
+<li><b>Thursday:</b> Idli + sambar breakfast, vegetable khichdi lunch, grilled fish dinner</li>
+<li><b>Friday:</b> Poha breakfast, chapati + paneer lunch, vegetable soup dinner</li>
+<li><b>Saturday:</b> Oats breakfast, brown rice + vegetables lunch, grilled chicken dinner</li>
+<li><b>Sunday:</b> Omelette breakfast, quinoa salad lunch, light vegetable dinner</li>
+</ul>
+
+</div>
+
+<!-- HIGH RISK DIET -->
+
+<div id="high" style="display:none;">
+
+<h2>High Risk – Strict Weekly Diet Plan</h2>
+
+<ul>
+<li><b>Monday:</b> Oats + flax seeds breakfast, vegetable salad lunch, grilled fish dinner</li>
+<li><b>Tuesday:</b> Boiled egg + nuts breakfast, vegetable soup lunch, grilled chicken dinner</li>
+<li><b>Wednesday:</b> Smoothie + chia seeds breakfast, quinoa salad lunch, steamed vegetables dinner</li>
+<li><b>Thursday:</b> Oatmeal breakfast, vegetable curry lunch, grilled fish dinner</li>
+<li><b>Friday:</b> Idli (2) + sambar breakfast, salad lunch, vegetable soup dinner</li>
+<li><b>Saturday:</b> Boiled egg + fruit breakfast, quinoa + vegetables lunch, grilled chicken dinner</li>
+<li><b>Sunday:</b> Oats breakfast, vegetable salad lunch, light soup dinner</li>
+</ul>
+
+</div>
+
+</div>
+
+<script>
+
+function showDiet(level){
+
+document.getElementById("low").style.display="none";
+document.getElementById("medium").style.display="none";
+document.getElementById("high").style.display="none";
+
+document.getElementById(level).style.display="block";
+
+}
+
+</script>
+
+</body>
+</html>
