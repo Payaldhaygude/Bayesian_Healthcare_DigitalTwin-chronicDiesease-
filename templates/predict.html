@@ -1,184 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Diabetes Risk Prediction</title>
+    <title>Diabetes Digital Twin</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     <style>
-        .predict-wrapper {
-            max-width: 700px;
-            margin: 60px auto;
-            padding: 0 20px 60px;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f4f6f9;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --border: #e8eaed;
+            --text-primary: #1a1d23;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --blue: #3b6fd4;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 24px rgba(0,0,0,0.08);
         }
 
-        .predict-wrapper h1 {
-            text-align: center;
-            font-size: 28px;
-            margin-bottom: 8px;
-            color: #1a1a2e;
-        }
-
-        .predict-wrapper .subtitle {
-            text-align: center;
-            color: #777;
-            font-size: 14px;
-            margin-bottom: 36px;
-        }
-
-        .form-card {
-            background: white;
-            border-radius: 14px;
-            padding: 40px;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.08);
-        }
-
-        .section-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #2f6fed;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            margin: 24px 0 12px;
-            padding-bottom: 6px;
-            border-bottom: 2px solid #eef2ff;
-        }
-
-        .section-label:first-of-type {
-            margin-top: 0;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
-
-        .field {
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        .field label {
-            font-size: 12px;
-            color: #555;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .field input {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.2s;
-            box-sizing: border-box;
-            margin: 0;
-        }
-
-        .field input:focus {
-            outline: none;
-            border-color: #2f6fed;
-            box-shadow: 0 0 0 3px rgba(47,111,237,0.12);
-        }
-
-        .hint {
-            font-size: 11px;
-            color: #aaa;
-            margin-top: 3px;
-        }
-
-        button[type="submit"] {
-            width: 100%;
-            padding: 15px;
-            margin-top: 28px;
-            border: none;
-            background: linear-gradient(135deg, #2f6fed, #4f8cff);
-            color: white;
-            font-size: 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            letter-spacing: 0.5px;
-        }
-
-        button[type="submit"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(47,111,237,0.4);
-        }
-
-        .result-section {
-            margin-top: 30px;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.09);
-            animation: slideUp 0.5s ease;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .result-header {
-            padding: 22px 30px;
+        /* ── Top nav ───────────────────────────────────────────────── */
+        .topnav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .result-header.high   { background: linear-gradient(135deg, #e53935, #ff6b6b); color: white; }
-        .result-header.medium { background: linear-gradient(135deg, #f57c00, #ffb74d); color: white; }
-        .result-header.low    { background: linear-gradient(135deg, #2e7d32, #43a047); color: white; }
-
-        .result-icon {
-            font-size: 28px;
-            font-weight: bold;
-            line-height: 1;
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--text-primary);
+            text-decoration: none;
         }
 
-        .result-header h2 {
-            margin: 0;
+        .topnav-brand span {
             font-size: 20px;
         }
 
-        .result-header p {
-            margin: 4px 0 0;
-            font-size: 13px;
-            opacity: 0.88;
+        .topnav-links {
+            display: flex;
+            gap: 4px;
+            list-style: none;
         }
 
-        .result-body {
-            background: white;
-            padding: 24px 30px;
+        .topnav-links a {
+            display: block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.15s;
         }
 
-        .result-body h4 {
-            margin: 0 0 14px;
-            color: #333;
-            font-size: 13px;
+        .topnav-links a:hover, .topnav-links a.active {
+            background: #f0f4ff;
+            color: var(--blue);
+        }
+
+        /* ── Layout ────────────────────────────────────────────────── */
+        .layout {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* ── Sidebar ───────────────────────────────────────────────── */
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 24px 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 28px;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
         }
 
+        .sidebar input[type="text"] {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: 0.15s;
+        }
+
+        .sidebar input[type="text"]:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(59,111,212,0.1);
+        }
+
+        /* Quick personas */
+        .personas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .persona-btn {
+            padding: 8px 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .persona-btn:hover {
+            border-color: var(--blue);
+            background: #f0f4ff;
+            color: var(--blue);
+        }
+
+        /* Lifestyle sliders */
+        .slider-group {
+            margin-bottom: 18px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .slider-label span:first-child {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .slider-val {
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: #f0f4ff;
+            color: var(--blue);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--border);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--blue);
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-footer {
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* ── Main content ──────────────────────────────────────────── */
+        .main {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .main-header {
+            margin-bottom: 28px;
+        }
+
+        .main-header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .main-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 2px;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            padding: 10px 18px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: 0.15s;
+        }
+
+        .tab-btn.active {
+            color: var(--blue);
+            border-bottom-color: var(--blue);
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Gauge row ─────────────────────────────────────────────── */
+        .gauge-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .gauge-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px 16px 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .gauge-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.04em;
+        }
+
+        .gauge-canvas-wrap {
+            position: relative;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-center-text {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 22px;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* ── Risk banner ───────────────────────────────────────────── */
+        .risk-banner {
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .risk-banner.high   { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .risk-banner.medium { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .risk-banner.low    { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* ── Cards ─────────────────────────────────────────────────── */
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: var(--text-primary);
+        }
+
+        /* Factor bars */
         .factor-row {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            gap: 12px;
+            gap: 14px;
+            margin-bottom: 14px;
         }
 
         .factor-name {
             font-size: 13px;
-            color: #555;
-            width: 150px;
+            color: var(--text-secondary);
+            width: 160px;
             flex-shrink: 0;
         }
 
         .factor-bar-bg {
             flex: 1;
             height: 8px;
-            background: #f0f0f0;
+            background: #f3f4f6;
             border-radius: 4px;
             overflow: hidden;
         }
@@ -186,161 +366,737 @@
         .factor-bar-fill {
             height: 100%;
             border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
         }
 
-        .factor-bar-fill.red    { background: #e53935; }
-        .factor-bar-fill.orange { background: #f57c00; }
-        .factor-bar-fill.green  { background: #43a047; }
+        .bar-green  { background: var(--green); }
+        .bar-yellow { background: var(--yellow); }
+        .bar-red    { background: var(--red); }
 
-        .factor-val {
+        .factor-pct {
             font-size: 12px;
-            color: #888;
-            width: 36px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text-muted);
+            width: 38px;
             text-align: right;
         }
 
-        .advice-box {
-            margin-top: 18px;
-            padding: 14px 18px;
-            background: #f8fbff;
-            border-left: 4px solid #2f6fed;
-            border-radius: 0 8px 8px 0;
+        /* Patient state pills */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .state-item {
+            text-align: center;
+        }
+
+        .state-icon {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .state-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .state-val {
             font-size: 13px;
-            color: #444;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Recommendation box */
+        .rec-box {
+            background: #1a2e1a;
+            border-radius: 10px;
+            padding: 16px 20px;
+            color: #86efac;
+            font-size: 14px;
             line-height: 1.6;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        /* What-if tab */
+        .whatif-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .whatif-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .whatif-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .whatif-val {
+            font-size: 32px;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .whatif-val.green { color: var(--green); }
+        .whatif-val.yellow { color: var(--yellow); }
+        .whatif-val.red { color: var(--red); }
+
+        .delta-badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .delta-badge.down { background: #dcfce7; color: #166534; }
+        .delta-badge.up   { background: #fee2e2; color: #991b1b; }
+        .delta-badge.same { background: #f3f4f6; color: #6b7280; }
+
+        /* How it works */
+        .how-step {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .how-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .how-text h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .how-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Input form (hidden, submits via JS) */
+        #hidden-form { display: none; }
+
+        /* Predict button */
+        .predict-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+
+        .predict-btn:hover {
+            background: #2d5bb8;
+            box-shadow: 0 4px 12px rgba(59,111,212,0.3);
+        }
+
+        @media (max-width: 900px) {
+            .layout { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
+            .gauge-row { grid-template-columns: 1fr; }
+            .state-grid { grid-template-columns: repeat(3,1fr); }
+            .whatif-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
 
-<nav>
-    <h2>Diabetes AI</h2>
-    <ul>
+<!-- Top Nav -->
+<nav class="topnav">
+    <a class="topnav-brand" href="/">
+        <span>🧬</span> Diabetes Digital Twin
+    </a>
+    <ul class="topnav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/prediction">Prediction</a></li>
+        <li><a href="/prediction" class="active">Dashboard</a></li>
         <li><a href="/diet">Diet</a></li>
         <li><a href="/prevention">Prevention</a></li>
     </ul>
 </nav>
 
-<div class="predict-wrapper">
+<!-- Hidden form that posts to Flask -->
+<form id="hidden-form" action="/predict" method="POST">
+    <input type="hidden" name="Glucose"       id="f-glucose">
+    <input type="hidden" name="BloodPressure" id="f-bp">
+    <input type="hidden" name="Insulin"       id="f-insulin">
+    <input type="hidden" name="BMI"           id="f-bmi">
+    <input type="hidden" name="DPF"           id="f-dpf">
+    <input type="hidden" name="Age"           id="f-age">
+    <input type="hidden" name="Pregnancies"   id="f-preg" value="0">
+    <input type="hidden" name="SkinThickness" id="f-skin" value="0">
+</form>
 
-    <h1>Diabetes Risk Prediction</h1>
-    <p class="subtitle">Enter your medical values — the Bayesian model will estimate your glucose risk level</p>
+<div class="layout">
 
-    <div class="form-card">
+    <!-- ── Sidebar ─────────────────────────────────────────────────── -->
+    <aside class="sidebar">
 
-        <form action="/predict" method="POST">
+        <div class="sidebar-section">
+            <div class="sidebar-title">Patient Profile</div>
+            <input type="text" id="patient-name" value="Patient" placeholder="Enter name">
+        </div>
 
-            <p class="section-label">Basic Information</p>
-            <div class="grid-2">
-                <div class="field">
-                    <label for="age">Age (years)</label>
-                    <input type="number" id="age" name="Age" placeholder="e.g. 35" min="1" max="120" required>
+        <div class="sidebar-section">
+            <div class="sidebar-title">Quick Personas</div>
+            <div class="personas">
+                <button class="persona-btn" onclick="loadPersona('healthy')">🏃 Active Healthy</button>
+                <button class="persona-btn" onclick="loadPersona('stressed')">😰 Stressed Student</button>
+                <button class="persona-btn" onclick="loadPersona('elderly')">👴 Elderly Sedentary</button>
+                <button class="persona-btn" onclick="loadPersona('worst')">🍔 Worst Case</button>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">Lifestyle Inputs</div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🍽️ Diet Quality</span>
+                    <span class="slider-val" id="lbl-diet">Fair</span>
                 </div>
-                <div class="field">
-                    <label for="preg">Pregnancies</label>
-                    <input type="number" id="preg" name="Pregnancies" placeholder="e.g. 2" min="0" max="20" required>
-                    <span class="hint">Enter 0 if not applicable</span>
+                <input type="range" id="sl-diet" min="0" max="3" value="1" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🏃 Exercise Level</span>
+                    <span class="slider-val" id="lbl-exercise">None</span>
+                </div>
+                <input type="range" id="sl-exercise" min="0" max="2" value="0" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>😴 Sleep Quality</span>
+                    <span class="slider-val" id="lbl-sleep">Okay</span>
+                </div>
+                <input type="range" id="sl-sleep" min="0" max="2" value="1" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>😤 Stress Level</span>
+                    <span class="slider-val" id="lbl-stress">Moderate</span>
+                </div>
+                <input type="range" id="sl-stress" min="0" max="2" value="1" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>💊 Medication</span>
+                    <span class="slider-val" id="lbl-med">None</span>
+                </div>
+                <input type="range" id="sl-med" min="0" max="2" value="0" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>⚖️ BMI</span>
+                    <span class="slider-val" id="lbl-bmi">27</span>
+                </div>
+                <input type="range" id="sl-bmi" min="16" max="45" value="27" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🩸 Glucose (mg/dL)</span>
+                    <span class="slider-val" id="lbl-glucose">110</span>
+                </div>
+                <input type="range" id="sl-glucose" min="60" max="250" value="110" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🫀 Blood Pressure</span>
+                    <span class="slider-val" id="lbl-bp">75</span>
+                </div>
+                <input type="range" id="sl-bp" min="40" max="130" value="75" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>💉 Insulin (μU/mL)</span>
+                    <span class="slider-val" id="lbl-insulin">80</span>
+                </div>
+                <input type="range" id="sl-insulin" min="0" max="300" value="80" oninput="updateSliders()">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🎂 Age</span>
+                    <span class="slider-val" id="lbl-age">35</span>
+                </div>
+                <input type="range" id="sl-age" min="18" max="80" value="35" oninput="updateSliders()">
+            </div>
+
+            <button class="predict-btn" onclick="submitPrediction()">Run Prediction</button>
+        </div>
+
+        <div class="sidebar-footer">
+            Powered by pgmpy Bayesian Networks<br>
+            Variable Elimination inference<br>
+            Do-calculus causal reasoning
+        </div>
+
+    </aside>
+
+    <!-- ── Main ────────────────────────────────────────────────────── -->
+    <main class="main">
+
+        <div class="main-header">
+            <h1 id="twin-title">Digital Twin — <span id="name-display">Patient</span></h1>
+            <p>Risk probabilities update when you click Run Prediction</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('live', this)">📊 Live Twin</button>
+            <button class="tab-btn" onclick="switchTab('whatif', this)">⚡ What-If Lab</button>
+            <button class="tab-btn" onclick="switchTab('howitworks', this)">💡 How It Works</button>
+        </div>
+
+        <!-- ── Live Twin tab ─────────────────────────────────────── -->
+        <div id="tab-live" class="tab-panel active">
+
+            {% if result_text %}
+
+            <!-- Gauge row -->
+            <div class="gauge-row">
+                <div class="gauge-card">
+                    <div class="gauge-title">Blood Glucose Risk</div>
+                    <div class="gauge-canvas-wrap">
+                        <canvas id="gauge1" width="160" height="100"></canvas>
+                        <div class="gauge-center-text" id="gauge1-text"
+                             style="color: {{ 'var(--red)' if risk_class == 'high' else ('var(--yellow)' if risk_class == 'medium' else 'var(--green)') }}">
+                            {{ bar_glucose }}
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-card">
+                    <div class="gauge-title">Insulin Sensitivity Risk</div>
+                    <div class="gauge-canvas-wrap">
+                        <canvas id="gauge2" width="160" height="100"></canvas>
+                        <div class="gauge-center-text" id="gauge2-text"
+                             style="color: {{ 'var(--red)' if risk_class == 'high' else ('var(--yellow)' if risk_class == 'medium' else 'var(--green)') }}">
+                            {{ bar_insulin }}
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-card">
+                    <div class="gauge-title">Overall Risk</div>
+                    <div class="gauge-canvas-wrap">
+                        <canvas id="gauge3" width="160" height="100"></canvas>
+                        <div class="gauge-center-text" id="gauge3-text"
+                             style="color: {{ 'var(--red)' if risk_class == 'high' else ('var(--yellow)' if risk_class == 'medium' else 'var(--green)') }}">
+                            {{ bar_bmi }}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <p class="section-label">Blood Measurements</p>
-            <div class="grid-2">
-                <div class="field">
-                    <label for="glucose">Glucose Level (mg/dL)</label>
-                    <input type="number" id="glucose" name="Glucose" placeholder="e.g. 120" min="0" max="300" required>
-                </div>
-                <div class="field">
-                    <label for="bp">Blood Pressure (mm Hg)</label>
-                    <input type="number" id="bp" name="BloodPressure" placeholder="e.g. 72" min="0" max="200" required>
-                </div>
-                <div class="field">
-                    <label for="insulin">Insulin Level (uU/mL)</label>
-                    <input type="number" id="insulin" name="Insulin" placeholder="e.g. 85" min="0" max="900" required>
-                    <span class="hint">Enter 0 if unknown</span>
-                </div>
-                <div class="field">
-                    <label for="skin">Skin Thickness (mm)</label>
-                    <input type="number" id="skin" name="SkinThickness" placeholder="e.g. 20" min="0" max="100" required>
-                    <span class="hint">Enter 0 if unknown</span>
-                </div>
+            <!-- Risk banner -->
+            <div class="risk-banner {{ risk_class }}">
+                <span>{{ '🔴' if risk_class == 'high' else ('🟡' if risk_class == 'medium' else '🟢') }}</span>
+                <strong>{{ headline }}</strong> — {{ advice }}
             </div>
 
-            <p class="section-label">Body and Family History</p>
-            <div class="grid-2">
-                <div class="field">
-                    <label for="bmi">BMI (kg/m2)</label>
-                    <input type="number" id="bmi" step="0.1" name="BMI" placeholder="e.g. 27.5" min="10" max="80" required>
-                </div>
-                <div class="field">
-                    <label for="dpf">Diabetes Pedigree Function</label>
-                    <input type="number" id="dpf" step="0.001" name="DPF" placeholder="e.g. 0.450" min="0" max="3" required>
-                    <span class="hint">Family history score (0 to 2.5)</span>
-                </div>
+            <!-- Overall risk distribution chart -->
+            <div class="card">
+                <div class="card-title">Overall Risk Distribution</div>
+                <canvas id="distChart" height="120"></canvas>
             </div>
 
-            <button type="submit">Predict My Risk</button>
-
-        </form>
-
-        {% if result_text %}
-        <div class="result-section">
-
-            <div class="result-header {{ risk_class }}">
-                <div class="result-icon">{{ icon }}</div>
-                <div>
-                    <h2>{{ headline }}</h2>
-                    <p>{{ result_text }}</p>
-                </div>
-            </div>
-
-            <div class="result-body">
-                <h4>Key Risk Factors</h4>
+            <!-- Key risk factors -->
+            <div class="card">
+                <div class="card-title">Key Risk Factors</div>
 
                 <div class="factor-row">
                     <span class="factor-name">Glucose Level</span>
                     <div class="factor-bar-bg">
-                        <div class="factor-bar-fill {{ bar_color }}" style="width: {{ bar_glucose }};"></div>
+                        <div class="factor-bar-fill {{ 'bar-red' if risk_class == 'high' else ('bar-yellow' if risk_class == 'medium' else 'bar-green') }}"
+                             style="width:{{ bar_glucose }}"></div>
                     </div>
-                    <span class="factor-val">{{ bar_glucose }}</span>
+                    <span class="factor-pct">{{ bar_glucose }}</span>
                 </div>
 
                 <div class="factor-row">
                     <span class="factor-name">BMI / Weight</span>
                     <div class="factor-bar-bg">
-                        <div class="factor-bar-fill {{ bar_color }}" style="width: {{ bar_bmi }};"></div>
+                        <div class="factor-bar-fill {{ 'bar-red' if risk_class == 'high' else ('bar-yellow' if risk_class == 'medium' else 'bar-green') }}"
+                             style="width:{{ bar_bmi }}"></div>
                     </div>
-                    <span class="factor-val">{{ bar_bmi }}</span>
+                    <span class="factor-pct">{{ bar_bmi }}</span>
                 </div>
 
                 <div class="factor-row">
                     <span class="factor-name">Insulin Sensitivity</span>
                     <div class="factor-bar-bg">
-                        <div class="factor-bar-fill {{ bar_color }}" style="width: {{ bar_insulin }};"></div>
+                        <div class="factor-bar-fill {{ 'bar-red' if risk_class == 'high' else ('bar-yellow' if risk_class == 'medium' else 'bar-green') }}"
+                             style="width:{{ bar_insulin }}"></div>
                     </div>
-                    <span class="factor-val">{{ bar_insulin }}</span>
+                    <span class="factor-pct">{{ bar_insulin }}</span>
                 </div>
 
                 <div class="factor-row">
                     <span class="factor-name">Blood Pressure</span>
                     <div class="factor-bar-bg">
-                        <div class="factor-bar-fill {{ bar_color }}" style="width: {{ bar_bp }};"></div>
+                        <div class="factor-bar-fill {{ 'bar-red' if risk_class == 'high' else ('bar-yellow' if risk_class == 'medium' else 'bar-green') }}"
+                             style="width:{{ bar_bp }}"></div>
                     </div>
-                    <span class="factor-val">{{ bar_bp }}</span>
-                </div>
-
-                <div class="advice-box">
-                    <strong>Recommendation:</strong> {{ advice }}
+                    <span class="factor-pct">{{ bar_bp }}</span>
                 </div>
             </div>
 
-        </div>
-        {% endif %}
+            <!-- Top recommendation -->
+            <div class="card">
+                <div class="card-title">Top Recommendation</div>
+                <div class="rec-box">
+                    <span>💡</span>
+                    <span>{{ advice }}</span>
+                </div>
+            </div>
 
-    </div>
+            <!-- Current patient state -->
+            <div class="card">
+                <div class="card-title">Current Patient State</div>
+                <div class="state-grid" id="state-grid">
+                    <div class="state-item">
+                        <div class="state-icon">🍽️</div>
+                        <div class="state-label">Diet</div>
+                        <div class="state-val" id="st-diet">—</div>
+                    </div>
+                    <div class="state-item">
+                        <div class="state-icon">🏃</div>
+                        <div class="state-label">Exercise</div>
+                        <div class="state-val" id="st-exercise">—</div>
+                    </div>
+                    <div class="state-item">
+                        <div class="state-icon">😴</div>
+                        <div class="state-label">Sleep</div>
+                        <div class="state-val" id="st-sleep">—</div>
+                    </div>
+                    <div class="state-item">
+                        <div class="state-icon">😤</div>
+                        <div class="state-label">Stress</div>
+                        <div class="state-val" id="st-stress">—</div>
+                    </div>
+                    <div class="state-item">
+                        <div class="state-icon">💊</div>
+                        <div class="state-label">Medication</div>
+                        <div class="state-val" id="st-med">—</div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+
+            <!-- Empty state -->
+            <div class="card" style="text-align:center; padding: 60px 24px;">
+                <div style="font-size:48px; margin-bottom:16px;">🧬</div>
+                <h3 style="font-size:18px; margin-bottom:8px;">No prediction yet</h3>
+                <p style="color:var(--text-secondary); font-size:14px;">
+                    Adjust the lifestyle sliders in the sidebar and click
+                    <strong>Run Prediction</strong> to see your Digital Twin analysis.
+                </p>
+            </div>
+
+            {% endif %}
+        </div>
+
+        <!-- ── What-If Lab tab ───────────────────────────────────── -->
+        <div id="tab-whatif" class="tab-panel">
+            <div class="card">
+                <div class="card-title">What-If Simulation</div>
+                <p style="font-size:13px; color:var(--text-secondary); margin-bottom:20px;">
+                    Change the lifestyle sliders in the sidebar and click Run Prediction
+                    to see how different choices affect your risk.
+                </p>
+
+                {% if result_text %}
+                <div class="whatif-grid">
+                    <div class="whatif-card">
+                        <div class="whatif-label">Current Risk</div>
+                        <div class="whatif-val {{ 'red' if risk_class == 'high' else ('yellow' if risk_class == 'medium' else 'green') }}">
+                            {{ bar_glucose }}
+                        </div>
+                        <div>{{ headline }}</div>
+                    </div>
+                    <div class="whatif-card">
+                        <div class="whatif-label">Risk Level</div>
+                        <div class="whatif-val {{ 'red' if risk_class == 'high' else ('yellow' if risk_class == 'medium' else 'green') }}">
+                            {{ risk_class | capitalize }}
+                        </div>
+                        <span class="delta-badge {{ 'up' if risk_class == 'high' else ('same' if risk_class == 'medium' else 'down') }}">
+                            {{ '↑ High concern' if risk_class == 'high' else ('~ Moderate' if risk_class == 'medium' else '↓ Well managed') }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="rec-box">
+                    <span>💡</span>
+                    <span>{{ advice }}</span>
+                </div>
+                {% else %}
+                <div style="text-align:center; padding:40px; color:var(--text-muted);">
+                    Run a prediction first to use the What-If Lab.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── How It Works tab ─────────────────────────────────── -->
+        <div id="tab-howitworks" class="tab-panel">
+            <div class="card">
+                <div class="card-title">How the Bayesian Digital Twin Works</div>
+
+                <div class="how-step">
+                    <div class="how-num">1</div>
+                    <div class="how-text">
+                        <h4>Data Preprocessing</h4>
+                        <p>Raw clinical data (Glucose, BMI, Blood Pressure, Insulin) from the Pima Indian Diabetes dataset is converted into categorical lifestyle nodes: Diet, Exercise, Sleep, Stress, Medication, BMI Level, and Insulin Sensitivity.</p>
+                    </div>
+                </div>
+
+                <div class="how-step">
+                    <div class="how-num">2</div>
+                    <div class="how-text">
+                        <h4>Causal Graph (DAG)</h4>
+                        <p>A Directed Acyclic Graph encodes causal relationships: Sleep affects Stress, Diet and Exercise affect Insulin Sensitivity, all of which causally influence GlucoseLevel. This is not correlation — it is causal reasoning.</p>
+                    </div>
+                </div>
+
+                <div class="how-step">
+                    <div class="how-num">3</div>
+                    <div class="how-text">
+                        <h4>Bayesian Parameter Learning</h4>
+                        <p>Conditional Probability Tables (CPTs) are learned from data using the BDeu Bayesian estimator with Laplace smoothing, which handles class imbalance and prevents the model from always predicting the majority class.</p>
+                    </div>
+                </div>
+
+                <div class="how-step">
+                    <div class="how-num">4</div>
+                    <div class="how-text">
+                        <h4>Variable Elimination Inference</h4>
+                        <p>Given your lifestyle evidence, Variable Elimination computes the exact posterior probability P(GlucoseLevel = High | evidence). This is probabilistic causal inference, not a black-box neural network.</p>
+                    </div>
+                </div>
+
+                <div class="how-step">
+                    <div class="how-num">5</div>
+                    <div class="how-text">
+                        <h4>What-If Simulation</h4>
+                        <p>By changing the evidence (e.g. switching Medication from No to Yes), you perform do-calculus intervention: P(GlucoseLevel | do(Medication=Yes)). This shows true causal effect, not just correlation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
 </div>
+
+<script>
+    // ── Slider label maps ──────────────────────────────────────────────────
+    const dietLabels     = ["Poor", "Fair", "Good", "Excellent"];
+    const exerciseLabels = ["None", "Light", "Regular"];
+    const sleepLabels    = ["Poor", "Okay (5-7h)", "Good (7-9h)"];
+    const stressLabels   = ["Low", "Moderate", "High"];
+    const medLabels      = ["None", "Partial", "Full"];
+
+    function updateSliders() {
+        document.getElementById("lbl-diet").textContent     = dietLabels[document.getElementById("sl-diet").value];
+        document.getElementById("lbl-exercise").textContent = exerciseLabels[document.getElementById("sl-exercise").value];
+        document.getElementById("lbl-sleep").textContent    = sleepLabels[document.getElementById("sl-sleep").value];
+        document.getElementById("lbl-stress").textContent   = stressLabels[document.getElementById("sl-stress").value];
+        document.getElementById("lbl-med").textContent      = medLabels[document.getElementById("sl-med").value];
+        document.getElementById("lbl-bmi").textContent      = document.getElementById("sl-bmi").value;
+        document.getElementById("lbl-glucose").textContent  = document.getElementById("sl-glucose").value;
+        document.getElementById("lbl-bp").textContent       = document.getElementById("sl-bp").value;
+        document.getElementById("lbl-insulin").textContent  = document.getElementById("sl-insulin").value;
+        document.getElementById("lbl-age").textContent      = document.getElementById("sl-age").value;
+
+        // Update state grid
+        document.getElementById("st-diet").textContent     = dietLabels[document.getElementById("sl-diet").value];
+        document.getElementById("st-exercise").textContent = exerciseLabels[document.getElementById("sl-exercise").value];
+        document.getElementById("st-sleep").textContent    = sleepLabels[document.getElementById("sl-sleep").value];
+        document.getElementById("st-stress").textContent   = stressLabels[document.getElementById("sl-stress").value];
+        document.getElementById("st-med").textContent      = medLabels[document.getElementById("sl-med").value];
+
+        // Update patient name in header
+        const name = document.getElementById("patient-name").value || "Patient";
+        document.getElementById("name-display").textContent = name;
+    }
+
+    // ── Quick personas ─────────────────────────────────────────────────────
+    function loadPersona(type) {
+        const p = {
+            healthy:  { diet:3, exercise:2, sleep:2, stress:0, med:0, bmi:22, glucose:85,  bp:65,  insulin:120, age:28 },
+            stressed: { diet:1, exercise:0, sleep:0, stress:2, med:0, bmi:24, glucose:115, bp:82,  insulin:40,  age:22 },
+            elderly:  { diet:1, exercise:0, sleep:1, stress:1, med:1, bmi:29, glucose:145, bp:90,  insulin:30,  age:65 },
+            worst:    { diet:0, exercise:0, sleep:0, stress:2, med:0, bmi:42, glucose:210, bp:100, insulin:10,  age:55 },
+        };
+        const s = p[type];
+        document.getElementById("sl-diet").value    = s.diet;
+        document.getElementById("sl-exercise").value= s.exercise;
+        document.getElementById("sl-sleep").value   = s.sleep;
+        document.getElementById("sl-stress").value  = s.stress;
+        document.getElementById("sl-med").value     = s.med;
+        document.getElementById("sl-bmi").value     = s.bmi;
+        document.getElementById("sl-glucose").value = s.glucose;
+        document.getElementById("sl-bp").value      = s.bp;
+        document.getElementById("sl-insulin").value = s.insulin;
+        document.getElementById("sl-age").value     = s.age;
+        updateSliders();
+    }
+
+    // ── Submit prediction via hidden form ──────────────────────────────────
+    function submitPrediction() {
+        document.getElementById("f-glucose").value = document.getElementById("sl-glucose").value;
+        document.getElementById("f-bp").value      = document.getElementById("sl-bp").value;
+        document.getElementById("f-insulin").value = document.getElementById("sl-insulin").value;
+        document.getElementById("f-bmi").value     = document.getElementById("sl-bmi").value;
+        document.getElementById("f-age").value     = document.getElementById("sl-age").value;
+        // DPF proxy from stress slider
+        const stressVal = parseInt(document.getElementById("sl-stress").value);
+        document.getElementById("f-dpf").value = stressVal === 2 ? "0.8" : (stressVal === 1 ? "0.4" : "0.1");
+        document.getElementById("hidden-form").submit();
+    }
+
+    // ── Tab switching ──────────────────────────────────────────────────────
+    function switchTab(id, btn) {
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById("tab-" + id).classList.add("active");
+        btn.classList.add("active");
+    }
+
+    // ── Draw gauges (semicircle) ───────────────────────────────────────────
+    function drawGauge(canvasId, pct, color) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const cx = canvas.width / 2, cy = canvas.height - 10;
+        const r = 70;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Background arc
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI, 0);
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = "#f3f4f6";
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        // Value arc
+        const angle = Math.PI + (pct / 100) * Math.PI;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI, angle);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+
+        // Tick marks 0 25 50 75 100
+        [0, 25, 50, 75, 100].forEach(v => {
+            const a = Math.PI + (v / 100) * Math.PI;
+            const x1 = cx + (r - 8) * Math.cos(a), y1 = cy + (r - 8) * Math.sin(a);
+            const x2 = cx + (r + 2) * Math.cos(a), y2 = cy + (r + 2) * Math.sin(a);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#d1d5db";
+            ctx.stroke();
+
+            ctx.fillStyle = "#9ca3af";
+            ctx.font = "9px DM Sans, sans-serif";
+            ctx.textAlign = "center";
+            const lx = cx + (r + 14) * Math.cos(a), ly = cy + (r + 14) * Math.sin(a);
+            ctx.fillText(v, lx, ly + 3);
+        });
+    }
+
+    // ── Draw distribution bar chart ────────────────────────────────────────
+    function drawDistChart(highPct) {
+        const ctx = document.getElementById("distChart");
+        if (!ctx) return;
+        const lowPct  = Math.max(0, 100 - highPct - (highPct * 0.6));
+        const medPct  = Math.max(0, 100 - highPct - lowPct);
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: ["Low Risk", "Medium Risk", "High Risk"],
+                datasets: [{
+                    data: [lowPct, medPct, highPct],
+                    backgroundColor: ["#22c55e", "#f59e0b", "#ef4444"],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { min: 0, max: 100, grid: { color: "#f3f4f6" },
+                         ticks: { callback: v => v + "%" } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // ── Init on load ───────────────────────────────────────────────────────
+    window.onload = function() {
+        updateSliders();
+
+        {% if result_text %}
+        const riskClass = "{{ risk_class }}";
+        const color = riskClass === "high" ? "#ef4444" : (riskClass === "medium" ? "#f59e0b" : "#22c55e");
+        const pct   = parseInt("{{ bar_glucose }}");
+        const pct2  = parseInt("{{ bar_insulin }}");
+        const pct3  = parseInt("{{ bar_bmi }}");
+
+        drawGauge("gauge1", pct,  color);
+        drawGauge("gauge2", pct2, riskClass === "low" ? "#22c55e" : color);
+        drawGauge("gauge3", pct3, color);
+        drawDistChart(pct);
+        {% endif %}
+    };
+</script>
 
 </body>
 </html>

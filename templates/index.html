@@ -1,58 +1,413 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <title>Diabetes Digital Twin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<title>Diabetes Prediction System</title>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #e8eaed;
+            --text-primary: #1a1d23;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --blue: #3b6fd4;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+        }
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
 
+        .topnav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .topnav-links {
+            display: flex;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .topnav-links a {
+            display: block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.15s;
+        }
+
+        .topnav-links a:hover, .topnav-links a.active {
+            background: #f0f4ff;
+            color: var(--blue);
+        }
+
+        /* ── Hero ──────────────────────────────────────────────────── */
+        .hero {
+            background: linear-gradient(135deg, #1e3a6e 0%, #2d5bb8 50%, #3b6fd4 100%);
+            padding: 80px 32px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 5px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 17px;
+            opacity: 0.85;
+            max-width: 560px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+
+        .hero-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: white;
+            color: var(--blue);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+        }
+
+        /* ── Stats bar ─────────────────────────────────────────────── */
+        .stats-bar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .stat-item {
+            padding: 20px 48px;
+            text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-item:last-child { border-right: none; }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 600;
+            font-family: 'DM Mono', monospace;
+            color: var(--blue);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── Features ──────────────────────────────────────────────── */
+        .section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 56px 24px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .section-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ── How it works ──────────────────────────────────────────── */
+        .how-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .how-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--blue);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .how-content h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .how-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ── CTA ───────────────────────────────────────────────────── */
+        .cta {
+            background: linear-gradient(135deg, #1e3a6e, #3b6fd4);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            color: white;
+            margin-top: 48px;
+        }
+
+        .cta h2 { font-size: 22px; font-weight: 600; margin-bottom: 10px; }
+        .cta p  { font-size: 14px; opacity: 0.85; margin-bottom: 24px; }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 13px 30px;
+            background: white;
+            color: var(--blue);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .cta-btn:hover { transform: translateY(-2px); }
+    </style>
 </head>
-
 <body>
 
-<nav>
-
-<h2>Diabetes AI</h2>
-
-<ul>
-<li><a href="/">Home</a></li>
-<li><a href="/prediction">Prediction</a></li>
-<li><a href="/diet">Diet</a></li>
-<li><a href="/prevention">Prevention</a></li>
-</ul>
-
+<nav class="topnav">
+    <a class="topnav-brand" href="/">
+        <span>🧬</span> Diabetes Digital Twin
+    </a>
+    <ul class="topnav-links">
+        <li><a href="/" class="active">Home</a></li>
+        <li><a href="/prediction">Dashboard</a></li>
+        <li><a href="/diet">Diet</a></li>
+        <li><a href="/prevention">Prevention</a></li>
+    </ul>
 </nav>
 
-
-<div class="home-container">
-
-<h1>AI Powered Diabetes Risk Prediction</h1>
-
-<p>
-This system predicts the risk of Type 2 Diabetes using medical parameters
-such as glucose level, BMI, blood pressure, insulin level and age.
-</p>
-
-<a href="/prediction" class="btn">Start Prediction</a>
-
+<!-- Hero -->
+<div class="hero">
+    <div class="hero-badge">🧬 Powered by Bayesian Networks</div>
+    <h1>AI-Powered Diabetes<br>Digital Twin</h1>
+    <p>A probabilistic causal model that simulates your personal diabetes risk in real time — adjusting instantly as your lifestyle changes.</p>
+    <a href="/prediction" class="hero-btn">Launch Digital Twin →</a>
 </div>
 
+<!-- Stats bar -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <div class="stat-number">768</div>
+        <div class="stat-label">Training samples</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Causal nodes</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">BDeu</div>
+        <div class="stat-label">Estimator</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">VE</div>
+        <div class="stat-label">Inference method</div>
+    </div>
+</div>
 
-<div class="about-section">
+<!-- Features -->
+<div class="section">
+    <div class="section-title">What this system does</div>
+    <div class="section-sub">Built with pgmpy, Flask, and causal reasoning — not a black-box neural network</div>
 
-<h2>About the Diabetes Prediction System</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Live Risk Dashboard</div>
+            <div class="feature-text">Semicircle gauges and bar charts show your Blood Glucose, Insulin Sensitivity, and Overall Risk updating in real time as you adjust lifestyle sliders.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">What-If Simulation</div>
+            <div class="feature-text">Ask "what if I start exercising?" or "what if I skip medication?" — the model computes do-calculus intervention probabilities instantly.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-title">Causal Reasoning</div>
+            <div class="feature-text">Unlike correlation-based ML models, this system encodes real causal edges: Diet → Glucose, Sleep → Stress → Glucose.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🥗</div>
+            <div class="feature-title">Diet Planner</div>
+            <div class="feature-text">Personalised weekly meal plans for Low, Medium, and High risk levels with foods to eat, foods to avoid, and daily nutrition targets.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🛡️</div>
+            <div class="feature-title">Prevention Guide</div>
+            <div class="feature-text">Evidence-based prevention strategies covering basic habits, lifestyle changes, health monitoring targets, and medical care checklists.</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">💡</div>
+            <div class="feature-title">Explainable AI</div>
+            <div class="feature-text">Every prediction shows which factors contributed and by how much — full transparency, no black box. You can see the Bayesian reasoning.</div>
+        </div>
+    </div>
 
-<p>
-The system uses a machine learning model to analyze patient health data and
-estimate the probability of diabetes risk.
-</p>
+    <!-- How it works -->
+    <div class="section-title">How it works</div>
+    <div class="section-sub" style="margin-bottom:24px;">5-step probabilistic pipeline from raw data to personalised risk</div>
 
-<p>
-In addition to prediction, the platform provides diet recommendations and
-prevention guidelines to help individuals maintain a healthy lifestyle and
-reduce the chances of developing diabetes.
-</p>
+    <div class="how-row">
+        <div class="how-num">1</div>
+        <div class="how-content">
+            <h4>Data Preprocessing</h4>
+            <p>Raw Pima Indian Diabetes dataset values (Glucose, BMI, Blood Pressure, Insulin, Age) are converted into meaningful categorical nodes: Diet, Exercise, Sleep, Stress, BMI Level, Insulin Sensitivity.</p>
+        </div>
+    </div>
+
+    <div class="how-row">
+        <div class="how-num">2</div>
+        <div class="how-content">
+            <h4>Causal Graph Construction</h4>
+            <p>A Directed Acyclic Graph (DAG) encodes causal relationships. Sleep → Stress, Diet → GlucoseLevel, Exercise → InsulinSensitivity → GlucoseLevel. This is causal structure, not just statistical correlation.</p>
+        </div>
+    </div>
+
+    <div class="how-row">
+        <div class="how-num">3</div>
+        <div class="how-content">
+            <h4>Bayesian Parameter Learning</h4>
+            <p>Conditional Probability Tables are learned using the BDeu Bayesian estimator with Laplace smoothing — handling the 3:1 class imbalance that caused the original "always low risk" bug.</p>
+        </div>
+    </div>
+
+    <div class="how-row">
+        <div class="how-num">4</div>
+        <div class="how-content">
+            <h4>Variable Elimination Inference</h4>
+            <p>Given your lifestyle evidence, Variable Elimination computes the exact posterior: P(GlucoseLevel = High | Sleep=Poor, Diet=HighCarb, ...). This is exact probabilistic inference.</p>
+        </div>
+    </div>
+
+    <div class="how-row">
+        <div class="how-num">5</div>
+        <div class="how-content">
+            <h4>Digital Twin Output</h4>
+            <p>The result is displayed as risk percentages, gauge charts, factor bars, and personalised recommendations — all updating live as you change the patient profile.</p>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+        <h2>Ready to see your Digital Twin?</h2>
+        <p>Adjust your lifestyle sliders and run the Bayesian prediction in under 10 seconds.</p>
+        <a href="/prediction" class="cta-btn">Launch Dashboard →</a>
+    </div>
 
 </div>
 

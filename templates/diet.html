@@ -1,108 +1,539 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Diet Plan</title>
+    <title>Diet Planner — Diabetes Digital Twin</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #e8eaed;
+            --text-primary: #1a1d23;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --blue: #3b6fd4;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ────────────────────────────────────────────────── */
+        .topnav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .topnav-links {
+            display: flex;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .topnav-links a {
+            display: block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.15s;
+        }
+
+        .topnav-links a:hover, .topnav-links a.active {
+            background: #f0f4ff;
+            color: var(--blue);
+        }
+
+        /* ── Page layout ───────────────────────────────────────────── */
+        .page {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 24px 60px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Risk selector ─────────────────────────────────────────── */
+        .risk-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .risk-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .risk-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .risk-card.active-low    { border-color: var(--green); background: #f0fdf4; }
+        .risk-card.active-medium { border-color: var(--yellow); background: #fffbeb; }
+        .risk-card.active-high   { border-color: var(--red); background: #fef2f2; }
+
+        .risk-card-icon { font-size: 32px; margin-bottom: 8px; }
+        .risk-card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+        .risk-card-sub { font-size: 12px; color: var(--text-muted); }
+
+        /* ── Diet panel ────────────────────────────────────────────── */
+        .diet-panel { display: none; }
+        .diet-panel.active { display: block; }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .panel-badge {
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-green  { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .badge-red    { background: #fee2e2; color: #991b1b; }
+
+        /* ── Week grid ─────────────────────────────────────────────── */
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .day-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px 10px;
+            box-shadow: var(--shadow);
+            border-top: 3px solid var(--border);
+        }
+
+        .day-card.green-top  { border-top-color: var(--green); }
+        .day-card.yellow-top { border-top-color: var(--yellow); }
+        .day-card.red-top    { border-top-color: var(--red); }
+
+        .day-name {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .meal-row {
+            margin-bottom: 8px;
+        }
+
+        .meal-type {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .meal-name {
+            font-size: 11px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        /* ── Foods to avoid / eat ──────────────────────────────────── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .food-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .food-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .food-list {
+            list-style: none;
+        }
+
+        .food-list li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .food-list li:last-child { border-bottom: none; }
+
+        .dot-green  { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+        .dot-red    { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+
+        /* ── Nutrient tips ─────────────────────────────────────────── */
+        .tips-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .tips-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .tip-item {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .tip-icon { font-size: 22px; margin-bottom: 6px; }
+        .tip-label { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
+        .tip-val { font-size: 13px; font-weight: 600; }
+    </style>
+</head>
 <body>
 
-<nav>
-    <h2>Diabetes AI</h2>
-    <ul>
+<nav class="topnav">
+    <a class="topnav-brand" href="/">
+        <span>🧬</span> Diabetes Digital Twin
+    </a>
+    <ul class="topnav-links">
         <li><a href="/">Home</a></li>
-        <li><a href="/predict">Prediction</a></li>
-        <li><a href="/diet">Diet</a></li>
+        <li><a href="/prediction">Dashboard</a></li>
+        <li><a href="/diet" class="active">Diet</a></li>
         <li><a href="/prevention">Prevention</a></li>
     </ul>
 </nav>
 
-<div class="about-container">
+<div class="page">
 
-<h1>Diabetes Diet Planner</h1>
+    <div class="page-header">
+        <h1>🥗 Diabetes Diet Planner</h1>
+        <p>Select your risk level to view a personalised weekly meal plan and nutrition guidance</p>
+    </div>
 
-<p>
-Select the risk level to view a recommended weekly diet plan designed to help manage blood sugar levels.
-</p>
+    <!-- Risk selector -->
+    <div class="risk-selector">
+        <div class="risk-card" id="btn-low" onclick="showDiet('low')">
+            <div class="risk-card-icon">🟢</div>
+            <div class="risk-card-title">Low Risk Diet</div>
+            <div class="risk-card-sub">Maintenance &amp; prevention</div>
+        </div>
+        <div class="risk-card" id="btn-medium" onclick="showDiet('medium')">
+            <div class="risk-card-icon">🟡</div>
+            <div class="risk-card-title">Medium Risk Diet</div>
+            <div class="risk-card-sub">Controlled carbohydrate plan</div>
+        </div>
+        <div class="risk-card" id="btn-high" onclick="showDiet('high')">
+            <div class="risk-card-icon">🔴</div>
+            <div class="risk-card-title">High Risk Diet</div>
+            <div class="risk-card-sub">Strict glucose management</div>
+        </div>
+    </div>
 
-<br>
+    <!-- ── LOW RISK ──────────────────────────────────────────────────── -->
+    <div id="panel-low" class="diet-panel">
+        <div class="panel-header">
+            <h2 style="font-size:20px; font-weight:600;">Low Risk — Weekly Meal Plan</h2>
+            <span class="panel-badge badge-green">Maintenance</span>
+        </div>
 
-<div style="text-align:center;">
-<button onclick="showDiet('low')">Low Risk Diet</button>
-<button onclick="showDiet('medium')">Medium Risk Diet</button>
-<button onclick="showDiet('high')">High Risk Diet</button>
-</div>
+        <div class="week-grid">
+            {% for day, meals in [
+                ("Mon", ("Oats + fruit", "Brown rice + veg", "Grilled chicken")),
+                ("Tue", ("Wheat toast + egg", "Dal + chapati", "Veg soup")),
+                ("Wed", ("Smoothie + nuts", "Quinoa salad", "Grilled fish")),
+                ("Thu", ("Upma", "Brown rice + dal", "Veg curry")),
+                ("Fri", ("Idli + sambar", "Veg khichdi", "Salad + soup")),
+                ("Sat", ("Poha", "Chapati + paneer", "Grilled veg")),
+                ("Sun", ("Omelette + toast", "Rice + fish curry", "Light salad"))
+            ] %}
+            <div class="day-card green-top">
+                <div class="day-name">{{ day }}</div>
+                <div class="meal-row">
+                    <div class="meal-type">Breakfast</div>
+                    <div class="meal-name">{{ meals[0] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Lunch</div>
+                    <div class="meal-name">{{ meals[1] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Dinner</div>
+                    <div class="meal-name">{{ meals[2] }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
-<br><br>
+        <div class="two-col">
+            <div class="food-card">
+                <div class="food-card-title">✅ Recommended Foods</div>
+                <ul class="food-list">
+                    <li><span class="dot-green"></span>Whole grains — oats, brown rice, quinoa</li>
+                    <li><span class="dot-green"></span>Lean proteins — chicken, fish, eggs</li>
+                    <li><span class="dot-green"></span>Vegetables — all non-starchy varieties</li>
+                    <li><span class="dot-green"></span>Legumes — dal, rajma, chana</li>
+                    <li><span class="dot-green"></span>Fruits — apple, pear, berries</li>
+                    <li><span class="dot-green"></span>Healthy fats — nuts, olive oil</li>
+                </ul>
+            </div>
+            <div class="food-card">
+                <div class="food-card-title">❌ Foods to Limit</div>
+                <ul class="food-list">
+                    <li><span class="dot-red"></span>Sugary drinks and sodas</li>
+                    <li><span class="dot-red"></span>White bread and maida</li>
+                    <li><span class="dot-red"></span>Fried and processed snacks</li>
+                    <li><span class="dot-red"></span>Sweets and desserts</li>
+                    <li><span class="dot-red"></span>High-fat dairy</li>
+                </ul>
+            </div>
+        </div>
 
-<!-- LOW RISK DIET -->
+        <div class="tips-card">
+            <div class="tips-title">Daily Nutrition Targets</div>
+            <div class="tips-grid">
+                <div class="tip-item"><div class="tip-icon">🔥</div><div class="tip-label">Calories</div><div class="tip-val">1800–2000</div></div>
+                <div class="tip-item"><div class="tip-icon">🌾</div><div class="tip-label">Carbs</div><div class="tip-val">45–60%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥩</div><div class="tip-label">Protein</div><div class="tip-val">20–25%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥑</div><div class="tip-label">Fat</div><div class="tip-val">20–30%</div></div>
+            </div>
+        </div>
+    </div>
 
-<div id="low" style="display:none;">
+    <!-- ── MEDIUM RISK ────────────────────────────────────────────────── -->
+    <div id="panel-medium" class="diet-panel">
+        <div class="panel-header">
+            <h2 style="font-size:20px; font-weight:600;">Medium Risk — Weekly Meal Plan</h2>
+            <span class="panel-badge badge-yellow">Controlled Carbs</span>
+        </div>
 
-<h2>Low Risk – Weekly Diet Plan</h2>
+        <div class="week-grid">
+            {% for day, meals in [
+                ("Mon", ("Oatmeal + seeds", "Quinoa + veg", "Grilled chicken")),
+                ("Tue", ("Boiled egg + fruit", "Brown rice + dal", "Veg soup")),
+                ("Wed", ("Smoothie + almonds", "Chapati + curry", "Salad")),
+                ("Thu", ("Idli + sambar", "Veg khichdi", "Grilled fish")),
+                ("Fri", ("Poha + chutney", "Chapati + paneer", "Veg soup")),
+                ("Sat", ("Oats + milk", "Brown rice + veg", "Chicken")),
+                ("Sun", ("Omelette", "Quinoa salad", "Light veg"))
+            ] %}
+            <div class="day-card yellow-top">
+                <div class="day-name">{{ day }}</div>
+                <div class="meal-row">
+                    <div class="meal-type">Breakfast</div>
+                    <div class="meal-name">{{ meals[0] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Lunch</div>
+                    <div class="meal-name">{{ meals[1] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Dinner</div>
+                    <div class="meal-name">{{ meals[2] }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
-<ul>
-<li><b>Monday:</b> Oats + fruit breakfast, brown rice + vegetables lunch, grilled chicken dinner</li>
-<li><b>Tuesday:</b> Whole wheat toast + egg, dal + chapati lunch, vegetable soup dinner</li>
-<li><b>Wednesday:</b> Smoothie + nuts breakfast, quinoa salad lunch, grilled fish dinner</li>
-<li><b>Thursday:</b> Upma breakfast, brown rice + dal lunch, vegetable curry dinner</li>
-<li><b>Friday:</b> Idli + sambar breakfast, vegetable khichdi lunch, salad + soup dinner</li>
-<li><b>Saturday:</b> Poha breakfast, chapati + paneer lunch, grilled vegetables dinner</li>
-<li><b>Sunday:</b> Omelette + toast breakfast, rice + fish curry lunch, light salad dinner</li>
-</ul>
+        <div class="two-col">
+            <div class="food-card">
+                <div class="food-card-title">✅ Recommended Foods</div>
+                <ul class="food-list">
+                    <li><span class="dot-green"></span>Low-GI grains — oats, barley, quinoa</li>
+                    <li><span class="dot-green"></span>Lean proteins — fish, chicken, tofu</li>
+                    <li><span class="dot-green"></span>Non-starchy vegetables</li>
+                    <li><span class="dot-green"></span>Nuts and seeds — flax, chia, almonds</li>
+                    <li><span class="dot-green"></span>Low-sugar fruits — berries, guava</li>
+                    <li><span class="dot-green"></span>Curd, buttermilk (low fat)</li>
+                </ul>
+            </div>
+            <div class="food-card">
+                <div class="food-card-title">❌ Foods to Avoid</div>
+                <ul class="food-list">
+                    <li><span class="dot-red"></span>White rice in large portions</li>
+                    <li><span class="dot-red"></span>Sugary cereals and juices</li>
+                    <li><span class="dot-red"></span>Fried foods and fast food</li>
+                    <li><span class="dot-red"></span>Alcohol and sugary drinks</li>
+                    <li><span class="dot-red"></span>High-sugar fruits — mango, banana</li>
+                    <li><span class="dot-red"></span>Packaged snacks</li>
+                </ul>
+            </div>
+        </div>
 
-</div>
+        <div class="tips-card">
+            <div class="tips-title">Daily Nutrition Targets</div>
+            <div class="tips-grid">
+                <div class="tip-item"><div class="tip-icon">🔥</div><div class="tip-label">Calories</div><div class="tip-val">1600–1800</div></div>
+                <div class="tip-item"><div class="tip-icon">🌾</div><div class="tip-label">Carbs</div><div class="tip-val">40–50%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥩</div><div class="tip-label">Protein</div><div class="tip-val">25–30%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥑</div><div class="tip-label">Fat</div><div class="tip-val">20–25%</div></div>
+            </div>
+        </div>
+    </div>
 
-<!-- MEDIUM RISK DIET -->
+    <!-- ── HIGH RISK ──────────────────────────────────────────────────── -->
+    <div id="panel-high" class="diet-panel">
+        <div class="panel-header">
+            <h2 style="font-size:20px; font-weight:600;">High Risk — Strict Weekly Meal Plan</h2>
+            <span class="panel-badge badge-red">Strict Glucose Control</span>
+        </div>
 
-<div id="medium" style="display:none;">
+        <div class="week-grid">
+            {% for day, meals in [
+                ("Mon", ("Oats + flax seeds", "Veg salad + dal", "Grilled fish")),
+                ("Tue", ("Boiled egg + nuts", "Veg soup + paneer", "Chicken")),
+                ("Wed", ("Smoothie + chia", "Quinoa salad", "Steamed veg")),
+                ("Thu", ("Oatmeal", "Veg curry + roti", "Grilled fish")),
+                ("Fri", ("Idli (2) + sambar", "Salad + soup", "Veg soup")),
+                ("Sat", ("Egg + fruit", "Quinoa + veg", "Chicken")),
+                ("Sun", ("Oats + milk", "Veg salad", "Light soup"))
+            ] %}
+            <div class="day-card red-top">
+                <div class="day-name">{{ day }}</div>
+                <div class="meal-row">
+                    <div class="meal-type">Breakfast</div>
+                    <div class="meal-name">{{ meals[0] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Lunch</div>
+                    <div class="meal-name">{{ meals[1] }}</div>
+                </div>
+                <div class="meal-row">
+                    <div class="meal-type">Dinner</div>
+                    <div class="meal-name">{{ meals[2] }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
 
-<h2>Medium Risk – Weekly Diet Plan</h2>
+        <div class="two-col">
+            <div class="food-card">
+                <div class="food-card-title">✅ Strictly Recommended</div>
+                <ul class="food-list">
+                    <li><span class="dot-green"></span>Oats, barley — very low GI</li>
+                    <li><span class="dot-green"></span>Leafy greens — spinach, methi</li>
+                    <li><span class="dot-green"></span>Bitter gourd — natural glucose controller</li>
+                    <li><span class="dot-green"></span>Fatty fish — salmon, mackerel</li>
+                    <li><span class="dot-green"></span>Nuts — walnuts, almonds (small qty)</li>
+                    <li><span class="dot-green"></span>Chia seeds and flax seeds</li>
+                    <li><span class="dot-green"></span>Cinnamon — helps insulin sensitivity</li>
+                </ul>
+            </div>
+            <div class="food-card">
+                <div class="food-card-title">❌ Strictly Avoid</div>
+                <ul class="food-list">
+                    <li><span class="dot-red"></span>All sugary foods and desserts</li>
+                    <li><span class="dot-red"></span>White rice, maida, white bread</li>
+                    <li><span class="dot-red"></span>Potatoes and starchy vegetables</li>
+                    <li><span class="dot-red"></span>Fruit juices and smoothies with sugar</li>
+                    <li><span class="dot-red"></span>All fried foods</li>
+                    <li><span class="dot-red"></span>Alcohol completely</li>
+                    <li><span class="dot-red"></span>Packaged and processed foods</li>
+                </ul>
+            </div>
+        </div>
 
-<ul>
-<li><b>Monday:</b> Oatmeal breakfast, quinoa + vegetables lunch, grilled chicken dinner</li>
-<li><b>Tuesday:</b> Boiled eggs + fruit breakfast, brown rice + dal lunch, vegetable soup dinner</li>
-<li><b>Wednesday:</b> Smoothie + almonds breakfast, chapati + vegetable curry lunch, salad dinner</li>
-<li><b>Thursday:</b> Idli + sambar breakfast, vegetable khichdi lunch, grilled fish dinner</li>
-<li><b>Friday:</b> Poha breakfast, chapati + paneer lunch, vegetable soup dinner</li>
-<li><b>Saturday:</b> Oats breakfast, brown rice + vegetables lunch, grilled chicken dinner</li>
-<li><b>Sunday:</b> Omelette breakfast, quinoa salad lunch, light vegetable dinner</li>
-</ul>
-
-</div>
-
-<!-- HIGH RISK DIET -->
-
-<div id="high" style="display:none;">
-
-<h2>High Risk – Strict Weekly Diet Plan</h2>
-
-<ul>
-<li><b>Monday:</b> Oats + flax seeds breakfast, vegetable salad lunch, grilled fish dinner</li>
-<li><b>Tuesday:</b> Boiled egg + nuts breakfast, vegetable soup lunch, grilled chicken dinner</li>
-<li><b>Wednesday:</b> Smoothie + chia seeds breakfast, quinoa salad lunch, steamed vegetables dinner</li>
-<li><b>Thursday:</b> Oatmeal breakfast, vegetable curry lunch, grilled fish dinner</li>
-<li><b>Friday:</b> Idli (2) + sambar breakfast, salad lunch, vegetable soup dinner</li>
-<li><b>Saturday:</b> Boiled egg + fruit breakfast, quinoa + vegetables lunch, grilled chicken dinner</li>
-<li><b>Sunday:</b> Oats breakfast, vegetable salad lunch, light soup dinner</li>
-</ul>
-
-</div>
+        <div class="tips-card">
+            <div class="tips-title">Daily Nutrition Targets</div>
+            <div class="tips-grid">
+                <div class="tip-item"><div class="tip-icon">🔥</div><div class="tip-label">Calories</div><div class="tip-val">1400–1600</div></div>
+                <div class="tip-item"><div class="tip-icon">🌾</div><div class="tip-label">Carbs</div><div class="tip-val">30–40%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥩</div><div class="tip-label">Protein</div><div class="tip-val">30–35%</div></div>
+                <div class="tip-item"><div class="tip-icon">🥑</div><div class="tip-label">Fat</div><div class="tip-val">25–30%</div></div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
 <script>
-
-function showDiet(level){
-
-document.getElementById("low").style.display="none";
-document.getElementById("medium").style.display="none";
-document.getElementById("high").style.display="none";
-
-document.getElementById(level).style.display="block";
-
-}
-
+    function showDiet(level) {
+        ["low","medium","high"].forEach(l => {
+            document.getElementById("panel-" + l).classList.remove("active");
+            document.getElementById("btn-" + l).className = "risk-card";
+        });
+        document.getElementById("panel-" + level).classList.add("active");
+        document.getElementById("btn-" + level).classList.add("active-" + level);
+    }
+    showDiet("low");
 </script>
 
 </body>

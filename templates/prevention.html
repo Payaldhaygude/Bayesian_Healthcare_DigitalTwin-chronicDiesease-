@@ -1,107 +1,584 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <title>Prevention Guide — Diabetes Digital Twin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<title>Diabetes Prevention</title>
+        :root {
+            --bg: #f4f6f9;
+            --card-bg: #ffffff;
+            --border: #e8eaed;
+            --text-primary: #1a1d23;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --blue: #3b6fd4;
+            --green: #22c55e;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+        }
 
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
 
+        .topnav {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topnav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 17px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .topnav-links {
+            display: flex;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .topnav-links a {
+            display: block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.15s;
+        }
+
+        .topnav-links a:hover, .topnav-links a.active {
+            background: #f0f4ff;
+            color: var(--blue);
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 24px 60px;
+        }
+
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* ── Category tabs ─────────────────────────────────────────── */
+        .cat-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .cat-tab {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 14px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .cat-tab:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+        .cat-tab.active { border-color: var(--blue); background: #f0f4ff; }
+
+        .cat-tab-icon { font-size: 28px; margin-bottom: 8px; }
+        .cat-tab-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+        /* ── Panels ────────────────────────────────────────────────── */
+        .prev-panel { display: none; }
+        .prev-panel.active { display: block; }
+
+        /* ── Tip cards grid ────────────────────────────────────────── */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .tip-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--blue);
+        }
+
+        .tip-card.green  { border-left-color: var(--green); }
+        .tip-card.yellow { border-left-color: var(--yellow); }
+        .tip-card.red    { border-left-color: var(--red); }
+        .tip-card.blue   { border-left-color: var(--blue); }
+
+        .tip-card-icon { font-size: 24px; margin-bottom: 10px; }
+        .tip-card-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .tip-card-text  { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+
+        /* ── Progress / stat bar ───────────────────────────────────── */
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+        }
+
+        .stat-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .stat-name {
+            font-size: 13px;
+            color: var(--text-secondary);
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .stat-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: #f3f4f6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--blue);
+        }
+
+        .stat-val {
+            font-size: 12px;
+            font-family: 'DM Mono', monospace;
+            color: var(--text-muted);
+            width: 40px;
+            text-align: right;
+        }
+
+        /* ── Checklist ─────────────────────────────────────────────── */
+        .checklist-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .checklist-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .check-item:last-child { border-bottom: none; }
+
+        .check-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            margin-top: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            transition: 0.15s;
+        }
+
+        .check-item.checked .check-box {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+
+        .check-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .check-item.checked .check-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* ── Warning banner ────────────────────────────────────────── */
+        .warning-banner {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: #92400e;
+            line-height: 1.6;
+        }
+    </style>
 </head>
-
 <body>
 
-<nav>
-
-<h2>Diabetes AI</h2>
-
-<ul>
-<li><a href="/">Home</a></li>
-<li><a href="/prediction">Prediction</a></li>
-<li><a href="/diet">Diet</a></li>
-<li><a href="/prevention">Prevention</a></li>
-</ul>
-
+<nav class="topnav">
+    <a class="topnav-brand" href="/">
+        <span>🧬</span> Diabetes Digital Twin
+    </a>
+    <ul class="topnav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/prediction">Dashboard</a></li>
+        <li><a href="/diet">Diet</a></li>
+        <li><a href="/prevention" class="active">Prevention</a></li>
+    </ul>
 </nav>
 
-<div class="about-container">
+<div class="page">
 
-<h1>Diabetes Prevention Guide</h1>
+    <div class="page-header">
+        <h1>🛡️ Diabetes Prevention Guide</h1>
+        <p>Evidence-based habits, lifestyle changes, and medical care to reduce your diabetes risk</p>
+    </div>
 
-<div class="prevention-buttons">
+    <div class="warning-banner">
+        <span>⚠️</span>
+        <span>This guide is for informational purposes only. Always consult a qualified healthcare provider for personalised medical advice and treatment decisions.</span>
+    </div>
 
-<button onclick="show('basic')">Basic Habits</button>
+    <!-- Category tabs -->
+    <div class="cat-tabs">
+        <button class="cat-tab active" onclick="showPanel('basic', this)">
+            <div class="cat-tab-icon">🌱</div>
+            <div class="cat-tab-title">Basic Habits</div>
+        </button>
+        <button class="cat-tab" onclick="showPanel('lifestyle', this)">
+            <div class="cat-tab-icon">🏃</div>
+            <div class="cat-tab-title">Lifestyle</div>
+        </button>
+        <button class="cat-tab" onclick="showPanel('monitor', this)">
+            <div class="cat-tab-icon">📊</div>
+            <div class="cat-tab-title">Monitoring</div>
+        </button>
+        <button class="cat-tab" onclick="showPanel('medical', this)">
+            <div class="cat-tab-icon">🏥</div>
+            <div class="cat-tab-title">Medical Care</div>
+        </button>
+    </div>
 
-<button onclick="show('lifestyle')">Healthy Lifestyle</button>
+    <!-- ── BASIC HABITS ─────────────────────────────────────────────── -->
+    <div id="panel-basic" class="prev-panel active">
+        <div class="tips-grid">
+            <div class="tip-card green">
+                <div class="tip-card-icon">🥗</div>
+                <div class="tip-card-title">Balanced Diet</div>
+                <div class="tip-card-text">Fill half your plate with vegetables, a quarter with whole grains, and a quarter with lean protein at every meal.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">💧</div>
+                <div class="tip-card-title">Stay Hydrated</div>
+                <div class="tip-card-text">Drink 8–10 glasses of water daily. Water helps flush glucose and keeps metabolism efficient.</div>
+            </div>
+            <div class="tip-card red">
+                <div class="tip-card-icon">🚫</div>
+                <div class="tip-card-title">Avoid Sugary Drinks</div>
+                <div class="tip-card-text">Replace sodas, juices, and sweetened teas with water, black coffee, or green tea. Even 1 soda/day raises diabetes risk by 26%.</div>
+            </div>
+            <div class="tip-card yellow">
+                <div class="tip-card-icon">🍞</div>
+                <div class="tip-card-title">Limit Processed Foods</div>
+                <div class="tip-card-text">Packaged snacks, white bread, and fast food cause rapid glucose spikes. Switch to whole-food alternatives.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">😴</div>
+                <div class="tip-card-title">Sleep 7–8 Hours</div>
+                <div class="tip-card-text">Poor sleep raises cortisol and disrupts insulin sensitivity. Aim for consistent sleep and wake times every day.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🍽️</div>
+                <div class="tip-card-title">Portion Control</div>
+                <div class="tip-card-text">Eat smaller, frequent meals rather than large ones. This prevents blood sugar spikes and improves insulin response.</div>
+            </div>
+        </div>
 
-<button onclick="show('monitor')">Health Monitoring</button>
+        <div class="checklist-card">
+            <div class="checklist-title">Daily Habits Checklist</div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Ate at least 3 portions of vegetables today</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Drank 8+ glasses of water</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Avoided sugary drinks and desserts</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Slept 7–8 hours last night</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Ate breakfast within 1 hour of waking</div>
+            </div>
+        </div>
+    </div>
 
-<button onclick="show('medical')">Medical Care</button>
+    <!-- ── LIFESTYLE ────────────────────────────────────────────────── -->
+    <div id="panel-lifestyle" class="prev-panel">
+        <div class="tips-grid">
+            <div class="tip-card green">
+                <div class="tip-card-icon">🚶</div>
+                <div class="tip-card-title">Walk 30 Minutes Daily</div>
+                <div class="tip-card-text">A brisk 30-minute walk every day reduces diabetes risk by up to 30%. Even 10-minute walks after meals help glucose control.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">💪</div>
+                <div class="tip-card-title">Strength Training</div>
+                <div class="tip-card-text">Muscle tissue absorbs glucose from blood. 2–3 sessions of resistance training per week significantly improves insulin sensitivity.</div>
+            </div>
+            <div class="tip-card yellow">
+                <div class="tip-card-icon">⚖️</div>
+                <div class="tip-card-title">Maintain Healthy Weight</div>
+                <div class="tip-card-text">Losing just 5–7% of body weight if overweight can cut diabetes risk by 58%. BMI under 25 is the target.</div>
+            </div>
+            <div class="tip-card red">
+                <div class="tip-card-icon">🪑</div>
+                <div class="tip-card-title">Reduce Sitting Time</div>
+                <div class="tip-card-text">Stand up every 30 minutes if you have a desk job. Prolonged sitting raises blood glucose even in active people.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">🧘</div>
+                <div class="tip-card-title">Manage Stress</div>
+                <div class="tip-card-text">Chronic stress raises cortisol which directly increases blood glucose. Practice 10 minutes of meditation or deep breathing daily.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🚭</div>
+                <div class="tip-card-title">Quit Smoking</div>
+                <div class="tip-card-text">Smokers are 30–40% more likely to develop Type 2 diabetes. Quitting reduces risk to non-smoker levels within 5 years.</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">Risk Reduction by Activity (evidence-based)</div>
+            <div class="stat-row">
+                <span class="stat-name">30 min walk daily</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:58%; background:var(--green);"></div></div>
+                <span class="stat-val">-58%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">Losing 7% body weight</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:58%; background:var(--green);"></div></div>
+                <span class="stat-val">-58%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">Strength training 3x/week</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:34%; background:var(--blue);"></div></div>
+                <span class="stat-val">-34%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">Quitting smoking</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:30%; background:var(--yellow);"></div></div>
+                <span class="stat-val">-30%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">Stress management</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:20%; background:var(--yellow);"></div></div>
+                <span class="stat-val">-20%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MONITORING ────────────────────────────────────────────────── -->
+    <div id="panel-monitor" class="prev-panel">
+        <div class="tips-grid">
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🩸</div>
+                <div class="tip-card-title">Blood Glucose</div>
+                <div class="tip-card-text">Fasting glucose should be below 100 mg/dL. 100–125 is prediabetes. Above 126 on two tests = diabetes. Check annually.</div>
+            </div>
+            <div class="tip-card red">
+                <div class="tip-card-icon">🫀</div>
+                <div class="tip-card-title">Blood Pressure</div>
+                <div class="tip-card-text">Target: below 120/80 mm Hg. High blood pressure and diabetes together multiply cardiovascular risk. Monitor monthly.</div>
+            </div>
+            <div class="tip-card yellow">
+                <div class="tip-card-icon">⚖️</div>
+                <div class="tip-card-title">BMI Tracking</div>
+                <div class="tip-card-text">Check BMI monthly. Target: 18.5–24.9. Waist circumference above 80cm (women) or 90cm (men) also signals risk.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">🧪</div>
+                <div class="tip-card-title">HbA1c Test</div>
+                <div class="tip-card-text">HbA1c shows your average blood glucose over 3 months. Below 5.7% is normal. 5.7–6.4% is prediabetes. Get tested yearly.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🫁</div>
+                <div class="tip-card-title">Cholesterol</div>
+                <div class="tip-card-text">High LDL cholesterol with diabetes is especially dangerous. Check lipid profile every 6–12 months.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">📱</div>
+                <div class="tip-card-title">Use This App</div>
+                <div class="tip-card-text">Run the Digital Twin prediction every few months with updated values to track how your lifestyle changes affect your risk score.</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">Healthy Target Reference</div>
+            <div class="stat-row">
+                <span class="stat-name">Fasting Glucose</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:40%; background:var(--green);"></div></div>
+                <span class="stat-val">&lt;100</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">HbA1c</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:57%; background:var(--green);"></div></div>
+                <span class="stat-val">&lt;5.7%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">Blood Pressure</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:60%; background:var(--blue);"></div></div>
+                <span class="stat-val">&lt;120/80</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-name">BMI</span>
+                <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:50%; background:var(--blue);"></div></div>
+                <span class="stat-val">18–25</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MEDICAL CARE ──────────────────────────────────────────────── -->
+    <div id="panel-medical" class="prev-panel">
+        <div class="tips-grid">
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🩺</div>
+                <div class="tip-card-title">Annual Checkups</div>
+                <div class="tip-card-text">See your doctor at least once a year for a full metabolic panel including glucose, cholesterol, kidney and liver function.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">💊</div>
+                <div class="tip-card-title">Take Medication as Prescribed</div>
+                <div class="tip-card-text">If prescribed Metformin or other diabetes medications, never skip doses. Consistent medication reduces HbA1c by 1–2%.</div>
+            </div>
+            <div class="tip-card yellow">
+                <div class="tip-card-icon">👁️</div>
+                <div class="tip-card-title">Eye Examination</div>
+                <div class="tip-card-text">Diabetes damages retinal blood vessels. Get an annual dilated eye exam to catch diabetic retinopathy early.</div>
+            </div>
+            <div class="tip-card red">
+                <div class="tip-card-icon">🦷</div>
+                <div class="tip-card-title">Dental Care</div>
+                <div class="tip-card-text">Gum disease worsens blood sugar control. Visit the dentist every 6 months and brush + floss twice daily.</div>
+            </div>
+            <div class="tip-card green">
+                <div class="tip-card-icon">👣</div>
+                <div class="tip-card-title">Foot Care</div>
+                <div class="tip-card-text">Diabetes affects circulation in feet. Check feet daily for cuts or sores. Wear comfortable shoes and never go barefoot outdoors.</div>
+            </div>
+            <div class="tip-card blue">
+                <div class="tip-card-icon">🧬</div>
+                <div class="tip-card-title">Know Your Family History</div>
+                <div class="tip-card-text">If a parent or sibling has diabetes, your risk doubles. Tell your doctor so they can recommend earlier and more frequent screening.</div>
+            </div>
+        </div>
+
+        <div class="checklist-card">
+            <div class="checklist-title">Annual Medical Checklist</div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Fasting blood glucose test done this year</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">HbA1c test completed</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Lipid panel / cholesterol test done</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Eye examination completed</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Dental checkup done</div>
+            </div>
+            <div class="check-item" onclick="toggleCheck(this)">
+                <div class="check-box"></div>
+                <div class="check-text">Blood pressure checked this month</div>
+            </div>
+        </div>
+    </div>
 
 </div>
-
-
-<div id="basic" class="prevention-content">
-
-<ul>
-<li>Maintain balanced diet</li>
-<li>Drink enough water</li>
-<li>Avoid sugary drinks</li>
-<li>Limit processed foods</li>
-<li>Sleep 7–8 hours daily</li>
-</ul>
-
-</div>
-
-
-<div id="lifestyle" class="prevention-content">
-
-<ul>
-<li>Exercise 30 minutes daily</li>
-<li>Maintain healthy weight</li>
-<li>Reduce sedentary lifestyle</li>
-<li>Manage stress</li>
-</ul>
-
-</div>
-
-
-<div id="monitor" class="prevention-content">
-
-<ul>
-<li>Check blood glucose regularly</li>
-<li>Monitor blood pressure</li>
-<li>Track BMI</li>
-</ul>
-
-</div>
-
-
-<div id="medical" class="prevention-content">
-
-<ul>
-<li>Regular health checkups</li>
-<li>Follow doctor's advice</li>
-<li>Consult doctor if symptoms appear</li>
-</ul>
-
-</div>
-
-</div>
-
 
 <script>
+    function showPanel(id, btn) {
+        document.querySelectorAll(".prev-panel").forEach(p => p.classList.remove("active"));
+        document.querySelectorAll(".cat-tab").forEach(b => b.classList.remove("active"));
+        document.getElementById("panel-" + id).classList.add("active");
+        btn.classList.add("active");
+    }
 
-function show(id){
-
-let sections=document.querySelectorAll(".prevention-content");
-
-sections.forEach(s=>s.style.display="none");
-
-document.getElementById(id).style.display="block";
-
-}
-
+    function toggleCheck(el) {
+        el.classList.toggle("checked");
+        el.querySelector(".check-box").textContent = el.classList.contains("checked") ? "✓" : "";
+    }
 </script>
 
 </body>
