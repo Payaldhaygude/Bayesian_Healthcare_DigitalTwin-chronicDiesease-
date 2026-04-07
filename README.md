@@ -317,13 +317,6 @@ Where $N'_{ij} = \frac{\alpha}{q_i}$ is the equivalent sample size prior (set to
 
 ---
 
-## 📚 References
-
-1. Koller, D., & Friedman, N. (2009). *Probabilistic Graphical Models*. MIT Press.
-2. Pearl, J. (2009). *Causality: Models, Reasoning, and Inference*. Cambridge University Press.
-3. pgmpy Documentation — https://pgmpy.org
-4. Smith, J.W. et al. (1988). *Using the ADAP Learning Algorithm to Forecast the Onset of Diabetes Mellitus* — Original Pima Indian Diabetes Dataset paper.
-5. Flask Documentation — https://flask.palletsprojects.com
 
 ---
 
