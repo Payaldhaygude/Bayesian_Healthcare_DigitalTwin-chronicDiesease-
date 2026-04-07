@@ -1,4 +1,4 @@
- # 🧬 Diabetes Digital Twin
+# 🧬 Diabetes Digital Twin
 ### AI-Powered Bayesian Healthcare Risk Monitor
 
 A probabilistic causal model that simulates personal diabetes risk in real time using Bayesian Networks — built as part of the **Mathematical Foundations of AI (MFAI)** course project.
