@@ -20,6 +20,7 @@ These are **what-if interventions** — a form of causal reasoning that goes bey
 
 ## 🎯 Objectives
 
+
 - Build a **Dynamic Bayesian Network** for Type 2 Diabetes risk modeling
 - Implement **probabilistic causal inference** using Variable Elimination
 - Create a **live dashboard** where lifestyle changes update risk in real time
