@@ -69,7 +69,7 @@ MFAI_digital_Twin/
 ---
 
 ## 🔄 Workflow
-
+![workflow](https://github.com/user-attachments/assets/5c62220e-680f-409c-a427-ac3b366ce1c6)
 ```
 Raw Data (diabetes.csv)
         ↓
