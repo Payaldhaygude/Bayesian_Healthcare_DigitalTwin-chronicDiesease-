@@ -70,29 +70,7 @@ MFAI_digital_Twin/
 
 ## 🔄 Workflow
 ![workflow](https://github.com/user-attachments/assets/5c62220e-680f-409c-a427-ac3b366ce1c6)
-```
-Raw Data (diabetes.csv)
-        ↓
-  Preprocessing (preprocess.py)
-  → Convert numerical columns to categorical nodes
-  → Create: Sleep, Diet, Exercise, Stress, Medication, BMI_Level, InsulinSensitivity
-        ↓
-  Bayesian Network (model.py)
-  → Define causal DAG structure
-  → Learn CPTs using BDeu BayesianEstimator
-  → Build VariableElimination inference engine
-        ↓
-  Flask API (app.py)
-  → Receive patient lifestyle inputs
-  → Convert to categorical evidence
-  → Run inference → get P(GlucoseLevel = High | evidence)
-        ↓
-  Dashboard (predict.html)
-  → Display risk gauges, factor bars, recommendation
-  → What-If simulation via slider changes
-```
 
----
 
 ## 🧠 Methodology
 
